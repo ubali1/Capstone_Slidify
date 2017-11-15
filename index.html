@@ -13,8 +13,7 @@
     media="only screen and (max-device-width: 480px)" >
   <link rel="stylesheet" href="libraries/frameworks/io2012/css/slidify.css" >
   <link rel="stylesheet" href="libraries/highlighters/highlight.js/css/tomorrow.css" />
-  <base target="_blank"> <!-- This amazingness opens all links in a new tab. -->  <link rel=stylesheet href="./assets/css/ribbons.css"></link>
-
+  <base target="_blank"> <!-- This amazingness opens all links in a new tab. -->  
   
   <!-- Grab CDN jQuery, fall back to local if offline -->
   <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.7.min.js"></script>
@@ -47,7 +46,14 @@
   </hgroup>
   <article data-timings="">
     <p>This presentation introduces an application that was developed as a capstone project for the Coursera Data Science specialization. The objective is to build a Shiny application that predicts the next word in a sequence of texts entered by a user as seen in predictive text applications used in mobile phones. This project was developed in cooperation with <a href="https://swiftkey.com">Swiftkey</a>.
-This slide deck includes four slides developed using Slidify and is hosted on GitHub. </p>
+This slide deck includes five slides developed using Slidify and is hosted on GitHub. </p>
+
+<ul>
+<li>Links to Project App &amp; Docs </li>
+<li><a href="https://ubali1.github.io/Capstone_Slidify/">This presentation</a></li>
+<li><a href="https://ubali1.shinyapps.io/DSS_Capstone/">Shiny App</a></li>
+<li><a href="https://github.com/ubali1/DSS_Capstone">Github repo</a></li>
+</ul>
 
   </article>
   <!-- Presenter Notes -->
@@ -55,10 +61,15 @@ This slide deck includes four slides developed using Slidify and is hosted on Gi
 
 <slide class="" id="slide-2" style="background:;">
   <hgroup>
-    <h2>Method</h2>
+    <h2>Data Source</h2>
   </hgroup>
   <article data-timings="">
-    <p>The source text data used for creating a Corpus was downloaded from HC Corpora <a href="https://www.corpora.heliohost.org">HC Corpora </a> and used to generate Term Document Matrices. The data set downloaded from HC Corpora was preprocessed first to remove punctuations, whitespace, numbers etc. and then a Corpus was subsequently generated which was used for <a href="https://en.wikipedia.org/wiki/Lexical_analysis#Tokenization">tokenization</a> and the generation of <a href="https://en.wikipedia.org/wiki/N-gram">n-grams</a>. Data frames containing bi, tri and quad-gram frequency matrices were used for next word prediction which corresponded to the word with the highest frequency based on the sequence of preceding user input text.</p>
+    <p>The source text data used for creating a Corpus was downloaded from <a href="https://www.corpora.heliohost.org">HC Corpora </a> and used to generate Term Document Matrices. 
+The data set consists of text from 3 sources: News, Blogs and Twitter feeds and is provided in 4 languages. For this project, we analyzed the English data set. The following table summarizes the data set: </p>
+
+<div style='text-align: center;'>
+    <img height='300' src='table1.png'/>
+</div>
 
   </article>
   <!-- Presenter Notes -->
@@ -66,32 +77,62 @@ This slide deck includes four slides developed using Slidify and is hosted on Gi
 
 <slide class="" id="slide-3" style="background:;">
   <hgroup>
-    <h2>Output</h2>
+    <h2>Data preprocessing</h2>
   </hgroup>
   <article data-timings="">
-    <p>This application uses a shiny reactive function to simultaneously generate the next word whilst the user is entering some text in the field and the predicted next word is outputted into a new cell along with the text inputted by the user.</p>
+    <p>A 10% sample of the data set downloaded from HC Corpora was preprocessed first. The sample was processed to remove emojis etc by converting sentences from UTF-8 to ASCII encoding. This was then followed by the removal of punctuations, whitespace, numbers etc. This was done using the tm package, as well as, the &#39;toSpace&#39; functions to remove special characters.</p>
 
-<div style='text-align: center;'>
-    <img height='300' src='Users/utsavbali/datasciencecoursera/Programming_Assignment/DDP_Slidify/DDP/assets/img/Plot1.png'/>
-</div>
-
-<h2>The About tab gives a bit of background on the project.</h2>
-
-<h2>Additional Info</h2>
-
-<p>Links to Project App &amp; Docs </p>
-
-<ul>
-<li><a href="https://github.com/ubali1/slide deck">This presentation,</a></li>
-<li><a href="https://ubali1.shinyapps.io/shiny/">Shiny App</a></li>
-<li><a href="https://github.com/ubali1/DDP.git">server.R and ui.R</a></li>
-</ul>
+<p>A Corpus was subsequently generated which was used for <a href="https://en.wikipedia.org/wiki/Lexical_analysis#Tokenization">tokenization</a> and the generation of <a href="https://en.wikipedia.org/wiki/N-gram">n-grams</a>. I used the tokenize function in the quanteda package to tokenize the text sample and then used the data.table function to create the word dictionaries. </p>
 
   </article>
   <!-- Presenter Notes -->
 </slide>
 
 <slide class="" id="slide-4" style="background:;">
+  <hgroup>
+    <h2>Word prediction</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>Data frames containing bi, tri and quad-gram frequency matrices were used for next word prediction which corresponded to the word with the highest frequency based on the sequence of preceding user input text.
+A wordPrediction function then predicts that next word occurrence by interrogating the four ngrams data table (depending on the length (wordCount) of the input text) to find the next most frequently occurring word. </p>
+
+<p>An example code is represented below which is used to output the next word from the word dictionaries.</p>
+
+<pre><code class="r">      wordPrediction &lt;- as.character(quadgram_Data[quadgram_Data$unigram==input_Text[1] &amp; quadgram_Data$bigram==input_Text[2] &amp; quadgram_Data$trigram==input_Text[3],][1,]$quadgram)
+
+        if(is.na(wordPrediction)) {
+          wordPrediction1 &lt;- as.character(trigram_Data[trigram_Data$unigram==input_Text[2] &amp; trigram_Data$bigram==input_Text[3],][1,]$trigram)
+
+          if(is.na(wordPrediction)) {
+            wordPrediction &lt;- as.character(bigram_Data[bigram_Data$unigram==input_Text[3],][1,]$bigram)
+            }
+        }
+
+print(wordPrediction)
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-5" style="background:;">
+  <hgroup>
+    <h2>Output</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>This application uses a shiny reactive function to generate the next word whilst the user is entering some text in the field and the predicted next word is outputted into a new cell along with the text inputted by the user. </p>
+
+<div style='text-align: center;'>
+    <img height='300' src='plot1.png'/>
+</div>
+
+<p>The About tab gives a bit of background on the project.</p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-6" style="background:;">
   <article data-timings="">
     
   </article>
@@ -110,20 +151,32 @@ This slide deck includes four slides developed using Slidify and is hosted on Gi
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=2 title='Method'>
+        data-slide=2 title='Data Source'>
          2
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=3 title='Output'>
+        data-slide=3 title='Data preprocessing'>
          3
       </a>
     </li>
     <li>
       <a href="#" target="_self" rel='tooltip' 
-        data-slide=4 title='NA'>
+        data-slide=4 title='Word prediction'>
          4
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=5 title='Output'>
+         5
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=6 title='NA'>
+         6
       </a>
     </li>
   </ul>
